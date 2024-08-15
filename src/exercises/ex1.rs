@@ -8,7 +8,6 @@ use embassy_rp::peripherals::PIO0;
 use embassy_rp::pio::InterruptHandler;
 use embassy_rp::{bind_interrupts};
 use embassy_rp::gpio::{Input, Pull};
-use embassy_time::{Duration, Timer};
 use rgb::RgbLed;
 #[allow(unused_imports)]
 use {defmt_rtt as _, panic_probe as _};
@@ -35,8 +34,6 @@ async fn main(spawner: Spawner) {
     let mut button_b = Input::new(peripherals.PIN_13, Pull::Up);
     let mut button_x = Input::new(peripherals.PIN_14, Pull::Up);
     let mut button_y = Input::new(peripherals.PIN_15, Pull::Up);
-
-    let delay = Duration::from_millis(1000);
 
     loop {
         let select_button = select4(
