@@ -5,11 +5,10 @@ use cyw43::Control;
 use cyw43_pio::PioSpi;
 use defmt::*;
 use embassy_executor::Spawner;
-use embassy_rp::{bind_interrupts, Peripheral, Peripherals};
-use embassy_rp::dma::Channel;
-use embassy_rp::gpio::{Level, Output, Pin};
+use embassy_rp::{bind_interrupts};
+use embassy_rp::gpio::{Level, Output};
 use embassy_rp::peripherals::{DMA_CH0, PIN_23, PIN_24, PIN_25, PIN_29, PIO0};
-use embassy_rp::pio::{Instance, InterruptHandler, Pio, PioPin};
+use embassy_rp::pio::{InterruptHandler, Pio};
 use embassy_time::{Duration, Timer};
 use static_cell::StaticCell;
 use {defmt_rtt as _, panic_probe as _};
@@ -17,6 +16,37 @@ use {defmt_rtt as _, panic_probe as _};
 bind_interrupts!(struct Irqs {
     PIO0_IRQ_0 => InterruptHandler<PIO0>;
 });
+
+#[embassy_executor::main]
+async fn main(spawner: Spawner) {
+    let peripherals = embassy_rp::init(Default::default());
+
+    let mut control = wifi(
+        &spawner,
+        peripherals.PIN_23,
+        peripherals.PIN_25,
+        peripherals.PIO0,
+        peripherals.PIN_24,
+        peripherals.PIN_29,
+        peripherals.DMA_CH0
+    ).await;
+
+    let mut led_pin = Output::new(peripherals.PIN_0, Level::Low);
+
+    let delay = Duration::from_millis(1000);
+
+    loop {
+        info!("led on!");
+        control.gpio_set(0, true).await;
+        led_pin.set_high();
+        Timer::after(delay).await;
+
+        info!("led off!");
+        control.gpio_set(0, false).await;
+        led_pin.set_low();
+        Timer::after(delay).await;
+    }
+}
 
 #[embassy_executor::task]
 async fn cyw43_task(
@@ -61,32 +91,4 @@ async fn wifi(
         .await;
 
     control
-}
-
-#[embassy_executor::main]
-async fn main(spawner: Spawner) {
-    let peripherals = embassy_rp::init(Default::default());
-
-    let mut control = wifi(
-        &spawner,
-        peripherals.PIN_23,
-        peripherals.PIN_25,
-        peripherals.PIO0,
-        peripherals.PIN_24,
-        peripherals.PIN_29,
-        peripherals.DMA_CH0
-    ).await;
-
-    let mut led_pin = Output::new(peripherals.PIN_0, Level::Low);
-
-    let delay = Duration::from_millis(50);
-    loop {
-        info!("led on!");
-        control.gpio_set(0, true).await;
-        Timer::after(delay).await;
-
-        info!("led off!");
-        control.gpio_set(0, false).await;
-        Timer::after(delay).await;
-    }
 }

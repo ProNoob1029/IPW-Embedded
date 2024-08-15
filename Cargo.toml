@@ -68,6 +68,10 @@ opt-level = "z"
 name = "blinky"
 path = "src/demo/blinky.rs"
 
+[[bin]]
+name = "ex1"
+path = "src/exercises/ex1.rs"
+
 # [[bin]]
 # name = "my_bin"
 # path = "path/to/my/bin"
