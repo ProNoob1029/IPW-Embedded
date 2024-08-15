@@ -52,7 +52,7 @@ async fn main(spawner: Spawner) {
         .set_power_management(cyw43::PowerManagementMode::PowerSave)
         .await;
 
-    let delay = Duration::from_secs(1);
+    let delay = Duration::from_millis(50);
     loop {
         info!("led on!");
         control.gpio_set(0, true).await;
