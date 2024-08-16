@@ -11,7 +11,7 @@ pub struct RgbLed<'d> {
 }
 
 impl<'d> RgbLed<'d> {
-    pub(crate) fn new<T: Slice, U: Slice>(
+    pub fn new<T: Slice, U: Slice>(
         slice_blue_green: impl Peripheral<P = T> + 'd,
         slice_red: impl Peripheral<P = U> + 'd,
         pin_blue: impl Peripheral<P = impl ChannelAPin<T>> + 'd,
