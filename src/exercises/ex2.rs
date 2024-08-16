@@ -25,9 +25,9 @@ async fn main(spawner: Spawner) {
 
     //i2c.write_eeprom(1, [68]).await;
 
-    i2c.read_eeprom(1, &mut read_buf).await;
+    i2c.read_eeprom(0, &mut read_buf).await;
 
-    info!("Read value {}", read_buf[0]);
+    info!("Read value {}", read_buf[1]);
 
     loop {
 
