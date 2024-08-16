@@ -2,12 +2,15 @@
 #![no_main]
 
 use defmt::*;
+use eeprom::Eeprom;
 use embassy_executor::Spawner;
 use embassy_rp::bind_interrupts;
-use embassy_rp::i2c::{Async, Config as I2cConfig, I2c, InterruptHandler as I2CInterruptHandler};
+use embassy_rp::i2c::{Config as I2cConfig, I2c, InterruptHandler as I2CInterruptHandler};
 use embassy_rp::peripherals::I2C0;
 #[allow(unused_imports)]
 use {defmt_rtt as _, panic_probe as _};
+
+mod eeprom;
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
@@ -18,14 +21,20 @@ async fn main(spawner: Spawner) {
 
     let mut i2c = I2c::new_async(peripherals.I2C0, scl, sda, Irqs, I2cConfig::default());
 
-    scan_i2c(&mut i2c).await;
+    let mut read_buf = [0x00; 2];
+
+    //i2c.write_eeprom(1, [68]).await;
+
+    i2c.read_eeprom(1, &mut read_buf).await;
+
+    info!("Read value {}", read_buf[0]);
 
     loop {
 
     }
 }
 
-async fn scan_i2c(i2c: &mut I2c<I2C0, Async>) {
+/*async fn scan_i2c<'d>(i2c: &mut I2c<'d, I2C0, Async>) {
     let mut rx_buf = [0x00u8; 2];
 
     info!("Scanning addresses");
@@ -38,7 +47,7 @@ async fn scan_i2c(i2c: &mut I2c<I2C0, Async>) {
             Err(_) => {}
         }
     }
-}
+}*/
 
 bind_interrupts!(struct Irqs {
     I2C0_IRQ => I2CInterruptHandler<I2C0>;
