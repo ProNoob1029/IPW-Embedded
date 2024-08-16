@@ -21,7 +21,7 @@ async fn main(spawner: Spawner) {
 
     let mut i2c = I2c::new_async(peripherals.I2C0, scl, sda, Irqs, I2cConfig::default());
 
-    let mut read_buf = [0x00; 2];
+    let mut read_buf = [0x00; 3];
 
     //i2c.write_eeprom(1, [68]).await;
 
