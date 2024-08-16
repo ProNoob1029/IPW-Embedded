@@ -72,6 +72,10 @@ path = "src/demo/blinky.rs"
 name = "ex1"
 path = "src/exercises/ex1.rs"
 
+[[bin]]
+name = "ex2"
+path = "src/exercises/ex2.rs"
+
 # [[bin]]
 # name = "my_bin"
 # path = "path/to/my/bin"

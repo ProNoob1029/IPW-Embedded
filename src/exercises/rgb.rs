@@ -40,17 +40,17 @@ impl<'d> RgbLed<'d> {
         }
     }
 
-    pub(crate) fn set_blue(&mut self, power: f32) {
+    pub fn set_blue(&mut self, power: f32) {
         self.config_blue_green.compare_a = power_to_pmw(power);
         self.pwm_blue_green.set_config(&self.config_blue_green);
     }
 
-    pub(crate) fn set_green(&mut self, power: f32) {
+    pub fn set_green(&mut self, power: f32) {
         self.config_blue_green.compare_b = power_to_pmw(power);
         self.pwm_blue_green.set_config(&self.config_blue_green);
     }
 
-    pub(crate) fn set_red(&mut self, power: f32) {
+    pub fn set_red(&mut self, power: f32) {
         self.config_red.compare_a = power_to_pmw(power);
         self.pwm_red.set_config(&self.config_red);
     }
