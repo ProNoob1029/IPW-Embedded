@@ -4,19 +4,12 @@
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_futures::select::{select4, Either4};
-use embassy_rp::peripherals::PIO0;
-use embassy_rp::pio::InterruptHandler;
-use embassy_rp::{bind_interrupts};
 use embassy_rp::gpio::{Input, Pull};
 use rgb::RgbLed;
 #[allow(unused_imports)]
 use {defmt_rtt as _, panic_probe as _};
 
 mod rgb;
-
-bind_interrupts!(struct Irqs {
-    PIO0_IRQ_0 => InterruptHandler<PIO0>;
-});
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
