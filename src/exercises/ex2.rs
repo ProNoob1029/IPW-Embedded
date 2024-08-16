@@ -4,7 +4,7 @@
 use defmt::*;
 use embassy_executor::Spawner;
 use embassy_rp::bind_interrupts;
-use embassy_rp::i2c::{Config as I2cConfig, I2c, InterruptHandler as I2CInterruptHandler};
+use embassy_rp::i2c::{Async, Config as I2cConfig, I2c, InterruptHandler as I2CInterruptHandler};
 use embassy_rp::peripherals::I2C0;
 #[allow(unused_imports)]
 use {defmt_rtt as _, panic_probe as _};
@@ -18,6 +18,14 @@ async fn main(spawner: Spawner) {
 
     let mut i2c = I2c::new_async(peripherals.I2C0, scl, sda, Irqs, I2cConfig::default());
 
+    scan_i2c(&mut i2c).await;
+
+    loop {
+
+    }
+}
+
+async fn scan_i2c(i2c: &mut I2c<I2C0, Async>) {
     let mut rx_buf = [0x00u8; 2];
 
     info!("Scanning addresses");
@@ -29,10 +37,6 @@ async fn main(spawner: Spawner) {
             }
             Err(_) => {}
         }
-    }
-
-    loop {
-
     }
 }
 
