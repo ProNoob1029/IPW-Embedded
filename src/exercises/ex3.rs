@@ -14,7 +14,7 @@ use embassy_sync::blocking_mutex::Mutex;
 use embassy_sync::blocking_mutex::raw::NoopRawMutex;
 use embassy_time::Delay;
 use embedded_graphics::Drawable;
-use embedded_graphics::mono_font::ascii::FONT_7X13_BOLD;
+use embedded_graphics::mono_font::ascii::{FONT_10X20, FONT_7X13_BOLD};
 use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::pixelcolor::{Rgb565, RgbColor};
 use embedded_graphics::prelude::Point;
@@ -72,9 +72,9 @@ async fn main(spawner: Spawner) {
 
     let color = Rgb565::new(255, 255, 0);
 
-    let style = MonoTextStyle::new(&FONT_7X13_BOLD, color);
+    let style = MonoTextStyle::new(&FONT_10X20, color);
 
-    Text::new("CLOOOOOOJ", Point::new(36, 190), style).draw(&mut display).unwrap();
+    Text::new("CLOOOOOOJ", Point::new(0, 60), style).draw(&mut display).unwrap();
 
     info!("wow");
 
