@@ -3,82 +3,69 @@
 
 use core::cell::RefCell;
 use defmt::*;
+use embassy_embedded_hal::SetConfig;
 use embassy_embedded_hal::shared_bus::blocking::spi::SpiDeviceWithConfig;
 use embassy_executor::Spawner;
 use embassy_rp::gpio::Level::{High, Low};
-use embassy_rp::gpio::Output;
-use embassy_rp::spi::{Config as SpiConfig, Spi};
+use embassy_rp::gpio::{Output, Pin};
+use embassy_rp::Peripheral;
 use embassy_rp::spi::Phase::CaptureOnSecondTransition;
 use embassy_rp::spi::Polarity::IdleHigh;
+use embassy_rp::spi::{Blocking, ClkPin, Config as SpiConfig, MisoPin, MosiPin, Spi};
+use embassy_sync::blocking_mutex::raw::{NoopRawMutex, RawMutex};
 use embassy_sync::blocking_mutex::Mutex;
-use embassy_sync::blocking_mutex::raw::NoopRawMutex;
-use embassy_time::Delay;
-use embedded_graphics::Drawable;
-use embedded_graphics::mono_font::ascii::{FONT_10X20, FONT_7X13_BOLD};
+use embassy_time::{Delay, Duration, Timer};
+use embedded_graphics::draw_target::DrawTarget;
+use embedded_graphics::mono_font::ascii::FONT_10X20;
 use embedded_graphics::mono_font::MonoTextStyle;
 use embedded_graphics::pixelcolor::{Rgb565, RgbColor};
 use embedded_graphics::prelude::Point;
 use embedded_graphics::text::Text;
+use embedded_graphics::Drawable;
+use embedded_hal_1::spi::SpiBus;
+use ipw_embedded::display::SPIDeviceInterface;
 use st7789::Orientation::Portrait;
 use st7789::ST7789;
 #[allow(unused_imports)]
 use {defmt_rtt as _, panic_probe as _};
-use ipw_embedded::display::SPIDeviceInterface;
+
+mod display_init;
 
 #[embassy_executor::main]
 async fn main(spawner: Spawner) {
     let peripherals = embassy_rp::init(Default::default());
 
-    let miso = peripherals.PIN_4;
-    let display_cs = peripherals.PIN_17;
-    let mosi = peripherals.PIN_19;
-    let clk = peripherals.PIN_18;
-    let reset = peripherals.PIN_0;
-    let dc = peripherals.PIN_16;
-
-    let mut display_config = SpiConfig::default();
-
-    display_config.frequency = 64_000_000;
-    display_config.phase = CaptureOnSecondTransition;
-    display_config.polarity = IdleHigh;
-
-    let spi = Spi::new_blocking(
+    let (spi, spi_config) = display_init::init_spi(
         peripherals.SPI0,
-        clk,
-        mosi,
-        miso,
-        display_config.clone()
+        peripherals.PIN_18,
+        peripherals.PIN_19,
+        peripherals.PIN_4
     );
 
     let spi_bus: Mutex<NoopRawMutex, _> = Mutex::new(RefCell::new(spi));
 
-    let display_spi = SpiDeviceWithConfig::new(
+    let mut display = display_init::init_display(
         &spi_bus,
-        Output::new(display_cs, High),
-        display_config
+        spi_config,
+        peripherals.PIN_17,
+        peripherals.PIN_0,
+        peripherals.PIN_16
     );
-
-    let dc = Output::new(dc, Low);
-    let reset = Output::new(reset, Low);
-    let di = SPIDeviceInterface::new(display_spi, dc);
-
-    let mut display = ST7789::new(di, reset, 240, 240);
-    display.init(&mut Delay).unwrap();
-    display.set_orientation(Portrait).unwrap();
-
-    use embedded_graphics::draw_target::DrawTarget;
-
-    display.clear(Rgb565::BLACK).unwrap();
 
     let color = Rgb565::new(255, 255, 0);
 
     let style = MonoTextStyle::new(&FONT_10X20, color);
 
-    Text::new("CLOOOOOOJ", Point::new(0, 60), style).draw(&mut display).unwrap();
+    let text = Text::new("CLOOOOOOJ", Point::new(0, 60), style);
 
-    info!("wow");
+    let delay = Duration::from_millis(500);
 
     loop {
+        text.draw(&mut display).unwrap();
+        info!("CLOOOOJ");
+        Timer::after(delay).await;
 
+        display.clear(Rgb565::BLACK).unwrap();
+        Timer::after(delay).await;
     }
 }
